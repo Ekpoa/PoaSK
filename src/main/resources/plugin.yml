@@ -1,0 +1,9 @@
+name: PoaSK
+version: 3.1.5
+main: poa.poask.PoaSK
+api-version: 1.19
+depend:
+  - Skript
+commands:
+  poasktest:
+    permission: poa.poasktest
