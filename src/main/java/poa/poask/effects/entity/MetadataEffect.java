@@ -59,7 +59,7 @@ public class MetadataEffect extends Effect implements Listener {
             UUID uuid = UUID.fromString(stringUUID);
             entity = Bukkit.getEntity(uuid);
             if(entity == null){
-                PoaSK.INSTANCE.getLogger().log(Level.SEVERE, "No entity exists with that UUID. If it is a fake entity use the entity id");
+                PoaSK.getInstance().getLogger().log(Level.SEVERE, "No entity exists with that UUID. If it is a fake entity use the entity id");
                 return;
             }
             id = entity.getEntityId();

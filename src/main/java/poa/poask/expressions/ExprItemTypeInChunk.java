@@ -4,7 +4,7 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
-import ch.njol.skript.lang.SkriptParser;
+import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import org.bukkit.Chunk;
@@ -13,29 +13,40 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.Event;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class BlockInChunk extends SimpleExpression<Location> {
+public class ExprItemTypeInChunk extends SimpleExpression<Location> {
 
     static {
-        Skript.registerExpression(BlockInChunk.class, Location.class, ExpressionType.COMBINED, "locations of %itemtypes% in %chunk%");
+        Skript.registerExpression(ExprItemTypeInChunk.class, Location.class, ExpressionType.COMBINED,
+                "locations of %itemtypes% in %chunk%");
     }
 
+    private Expression<ItemType> itemTypes;
+    private Expression<Chunk> chunk;
+
+    @SuppressWarnings({"unchecked", "NullableProblems"})
     @Override
-    protected @Nullable Location[] get(Event e) {
-        ItemType[] type = itemTypeExpression.getArray(e);
-        List<Material> materials = Arrays.stream(type).map(ItemType::getMaterial).toList();
+    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+        itemTypes = (Expression<ItemType>) exprs[0];
+        chunk = (Expression<Chunk>) exprs[1];
+        return true;
+    }
 
+    @SuppressWarnings("NullableProblems")
+    @Override
+    protected @Nullable Location[] get(Event event) {
 
-        Chunk chunk = chunkExpression.getSingle(e);
-        
+        List<Material> materials = Arrays.stream(this.itemTypes.getArray(event)).map(ItemType::getMaterial).toList();
+        Chunk chunk = this.chunk.getSingle(event);
+        if (chunk == null) return null;
 
         List<Location> locList = new ArrayList<>();
-
 
         int x = chunk.getX() << 4;
         int z = chunk.getZ() << 4;
@@ -57,30 +68,22 @@ public class BlockInChunk extends SimpleExpression<Location> {
         return locList.toArray(new Location[0]);
     }
 
-
     @Override
     public boolean isSingle() {
         return false;
     }
 
     @Override
-    public Class<? extends Location> getReturnType() {
+    public @NotNull Class<? extends Location> getReturnType() {
         return Location.class;
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Override
-    public String toString(@Nullable Event e, boolean debug) {
-        return "location of block";
+    public @NotNull String toString(@Nullable Event event, boolean debug) {
+        String itemType = this.itemTypes.toString(event, debug);
+        String chunk = this.chunk.toString(event, debug);
+        return "location of " + itemType + " in " + chunk;
     }
 
-    private Expression<ItemType> itemTypeExpression;
-    private Expression<Chunk> chunkExpression;
-
-    @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        itemTypeExpression = (Expression<ItemType>) exprs[0];
-        chunkExpression = (Expression<Chunk>) exprs[1];
-
-        return true;
-    }
 }

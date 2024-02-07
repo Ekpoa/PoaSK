@@ -90,7 +90,7 @@ public class ClientBoundInfoUpdatePacketUsername {
 
         Object writer = writerField.get(addPlayer);
 
-        Object proxi = Proxy.newProxyInstance(PoaSK.INSTANCE.getClass().getClassLoader(), new Class[]{buffWriter}, (proxy, method, argss) -> {
+        Object proxi = Proxy.newProxyInstance(PoaSK.getInstance().getClass().getClassLoader(), new Class[]{buffWriter}, (proxy, method, argss) -> {
             if (!method.getName().equalsIgnoreCase("accept"))
                 return null;
 

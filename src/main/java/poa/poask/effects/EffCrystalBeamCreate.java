@@ -57,7 +57,7 @@ public class EffCrystalBeamCreate extends Effect {
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException(ex);
         }
-        laser.start(PoaSK.INSTANCE);
+        laser.start(PoaSK.getInstance());
     }
 
     @SuppressWarnings("DataFlowIssue")

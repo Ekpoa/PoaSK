@@ -75,7 +75,7 @@ public class EffBrand extends Effect {
     }
 
     public void setBrandOld(Event event) {
-        Bukkit.getMessenger().registerOutgoingPluginChannel(PoaSK.INSTANCE, "minecraft:brand");
+        Bukkit.getMessenger().registerOutgoingPluginChannel(PoaSK.getInstance(), "minecraft:brand");
         if (string.getSingle(event) == null) return;
         String s = string.getSingle(event).replace("&", "§");
         ByteBuf buffer = Unpooled.buffer();
@@ -92,7 +92,7 @@ public class EffBrand extends Effect {
                 throw new RuntimeException(ex);
             }
 
-            p.sendPluginMessage(PoaSK.INSTANCE, "minecraft:brand", buffer.array());
+            p.sendPluginMessage(PoaSK.getInstance(), "minecraft:brand", buffer.array());
         }
     }
 

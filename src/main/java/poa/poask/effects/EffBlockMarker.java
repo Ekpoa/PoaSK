@@ -26,7 +26,7 @@ public class EffBlockMarker extends Effect {
         Skript.registerEffect(
                 EffBlockMarker.class,
                 "create debug marker at %location% green amount %number% and %number% alpha with text %string% for %players%");
-        Bukkit.getMessenger().registerOutgoingPluginChannel(PoaSK.INSTANCE, "minecraft:debug/game_test_add_marker");
+        Bukkit.getMessenger().registerOutgoingPluginChannel(PoaSK.getInstance(), "minecraft:debug/game_test_add_marker");
     }
 
     private Expression<Location> locationExpression;
@@ -74,7 +74,7 @@ public class EffBlockMarker extends Effect {
             //((CraftPlayer) player).addChannel("minecraft:debug/game_test_add_marker");
 
 
-            player.sendPluginMessage(PoaSK.INSTANCE, "minecraft:debug/game_test_add_marker", buf.array());
+            player.sendPluginMessage(PoaSK.getInstance(), "minecraft:debug/game_test_add_marker", buf.array());
         }
     }
 
