@@ -32,6 +32,11 @@ public class Letters {
     public static String dataSerializersPose = letter("v", "v", "v", "v", "u", "t", "t", "t"); //see above
     public static String dataSerializersItemStack = letter("h","h", "h", "h", "h", "g", "g", "g"); //see above
     public static String dataSerializersRotations = letter("m","m", "m", "m", "l", "k", "k", "k"); //see above
+    public static String getDataSerializersInt = letter("b", "b", "b", "b", "b", "b", "b", "b");
+    public static String getDataSerializersVector = letter("A", "A", "A", "A", "A", "A", "A", "A");
+    public static String getDataSerializersQuaternion = letter("B", "B", "B", "B", "B", "B", "B", "B");
+    public static String getDataSerializersFloat = letter("d", "d", "d", "d", "B", "B", "B", "B");
+    public static String getDataSerializersComponent = letter("f","f", "f", "f", "f", "e", "e", "e");
 
 
     public static String getMinecraftServerConnection = letter("ad","ad", "ad", "ad", "ac", "ad", "ad", "ad");  //https://nms.screamingsandals.org/1.20.2/net/minecraft/server/MinecraftServer.html

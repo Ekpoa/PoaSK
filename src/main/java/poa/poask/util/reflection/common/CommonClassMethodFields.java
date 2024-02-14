@@ -1,5 +1,6 @@
 package poa.poask.util.reflection.common;
 
+import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import org.bukkit.inventory.ItemStack;
@@ -184,6 +185,11 @@ public class CommonClassMethodFields {
                  InvocationTargetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @SneakyThrows
+    public static Object itemAsBukkitCopy(ItemStack item){
+       return CommonClassMethodFields.fromBukkitCopy.invoke(CommonClassMethodFields.itemStackClass, item);
     }
 
 
