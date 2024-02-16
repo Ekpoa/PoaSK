@@ -39,7 +39,7 @@ public class Letters {
     public static String getDataSerializersComponent = letter("f","f", "f", "f", "f", "e", "e", "e");
 
 
-    public static String getMinecraftServerConnection = letter("ad","ad", "ad", "ad", "ac", "ad", "ad", "ad");  //https://nms.screamingsandals.org/1.20.2/net/minecraft/server/MinecraftServer.html
+    public static String getMinecraftServerConnection = letter("af","ad", "ad", "ad", "ac", "ad", "ad", "ad");  //https://nms.screamingsandals.org/1.20.2/net/minecraft/server/MinecraftServer.html
     public static String getRemoteAddress = letter("f", "f", "c", "c", "c", "c", "c", "c"); //https://nms.screamingsandals.org/1.20.2/net/minecraft/network/Connection.html
     public static String getConnections = letter("e","e", "e", "e", "e", "e", "e", "e"); //https://nms.screamingsandals.org/1.20.2/net/minecraft/server/network/ServerConnectionListener.html
     public static String minecraftServerConnectionAddress = letter("n","n", "n", "n", "n", "n", "n", "n"); //https://nms.screamingsandals.org/1.19.3/net/minecraft/network/Connection.html

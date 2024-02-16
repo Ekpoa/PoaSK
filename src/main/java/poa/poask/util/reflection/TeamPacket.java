@@ -31,7 +31,6 @@ public class TeamPacket {
 
             nuller = FriendlyByteBuf.writeComponentLitteral.invoke(FriendlyByteBuf.chatBaseComponent, ""); //null
 
-
             packetConstruct = teamPacketClass.getDeclaredConstructor(String.class, int.class, Optional.class, Collection.class);
             packetConstruct.setAccessible(true);
         } catch (Exception ignored) {

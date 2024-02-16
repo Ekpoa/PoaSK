@@ -20,6 +20,8 @@ public final class PoaSK extends JavaPlugin {
         INSTANCE = this;
         SkriptAddon skriptAddon = Skript.registerAddon(this);
 
+        Types.call();
+
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new ExprHostname(), this);
         pm.registerEvents(new Login(), this);

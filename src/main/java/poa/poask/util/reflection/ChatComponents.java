@@ -6,13 +6,14 @@ import poa.poask.util.reflection.common.CommonClassMethodFields;
 
 public class ChatComponents {
 
-
-
-
-
     @SneakyThrows
     public static Object nmsComponent(Component component){
-        return CommonClassMethodFields.serializeMethod.invoke(CommonClassMethodFields.serializeObject, component);
+        return CommonClassMethodFields.adventureSerializeMethod.invoke(CommonClassMethodFields.wrapperAwareObject, component);
+    }
+
+    @SneakyThrows
+    public static Component adventureComponent(Object nmsComponent){
+        return (Component) CommonClassMethodFields.adventureDeserializeMethod.invoke(CommonClassMethodFields.wrapperAwareObject, nmsComponent);
     }
 
 }

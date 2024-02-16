@@ -5,10 +5,12 @@ import ch.njol.skript.lang.util.SimpleEvent;
 import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Getter;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.Nullable;
+import poa.poask.util.packetListener.ActionBarEvent;
 import poa.poask.util.packetListener.ClientBlockChangeEvent;
 
 public class Events extends SimpleEvent {
@@ -31,6 +33,26 @@ public class Events extends SimpleEvent {
                 return event.getNewState();
             }
         }, EventValues.TIME_NOW);
+
+        // Action bar send event
+        Skript.registerEvent("Action Bar Send", SimpleEvent.class, ActionBarEvent.class, "action bar send");
+
+        EventValues.registerEventValue(ActionBarEvent.class, Component.class,
+                new Getter<>() {
+                    @Override
+                    public @Nullable Component get(ActionBarEvent event) {
+                        return event.getComponent();
+                    }
+                }, EventValues.TIME_NOW);
+
+        EventValues.registerEventValue(ActionBarEvent.class, String.class,
+                new Getter<>() {
+                    @Override
+                    public @Nullable String get(ActionBarEvent event) {
+                        return event.getMiniMessageString();
+                    }
+                }, EventValues.TIME_NOW);
+
 
         // Player load entity event
         Skript.registerEvent("Player Load Entity", SimpleEvent.class, PlayerTrackEntityEvent.class,

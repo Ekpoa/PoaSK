@@ -54,7 +54,9 @@ public class EffGlowEffect extends Effect implements Listener {
     protected void execute(Event event) {
         Color color = this.color.getSingle(event);
         String chatColor = "white";
-        if (color != null) ((SkriptColor) color).asChatColor().name();
+        if (color != null)
+            chatColor = ((SkriptColor) color).asChatColor().name();
+
 
 
         for (Entity entity : this.entities.getArray(event)) {

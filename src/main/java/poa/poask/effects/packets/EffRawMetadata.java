@@ -132,13 +132,13 @@ public class EffRawMetadata extends Effect {
                         case "posrot" -> metadata.setPosRotDuration(Integer.parseInt(args[2]));
                         case "translation" -> metadata.setTranslation(Float.parseFloat(args[2]), Float.parseFloat(args[3]), Float.parseFloat(args[4]));
                         case "scale" -> metadata.setScale(Float.parseFloat(args[2]), Float.parseFloat(args[3]), Float.parseFloat(args[4]));
-                        case "left roation" -> metadata.setRotationLeft(Float.parseFloat(args[3]), Float.parseFloat(args[4]), Float.parseFloat(args[5]), Float.parseFloat(args[6]));
+                        case "left rotation" -> metadata.setRotationLeft(Float.parseFloat(args[3]), Float.parseFloat(args[4]), Float.parseFloat(args[5]), Float.parseFloat(args[6]));
                         case "right rotation" -> metadata.setRotationRight(Float.parseFloat(args[3]), Float.parseFloat(args[4]), Float.parseFloat(args[5]), Float.parseFloat(args[6]));
                         case "billboard" -> metadata.setBillboard(args[2]);
                         case "brightness" -> metadata.setBrightness(Integer.parseInt(args[2]));
                         case "view range" -> metadata.setViewRange(Float.parseFloat(args[3]));
                         case "shadow radius" -> metadata.setShadowRadius(Float.parseFloat(args[3]));
-                        case "shadow strenght" -> metadata.setShadowStrength(Float.parseFloat(args[3]));
+                        case "shadow strength" -> metadata.setShadowStrength(Float.parseFloat(args[3]));
                         case "width" -> metadata.setWidth(Float.parseFloat(args[2]));
                         case "height" -> metadata.setHeight(Float.parseFloat(args[2]));
                         case "glow override" -> metadata.setGlowOverride(Integer.parseInt(args[3]));

@@ -22,8 +22,11 @@ public class CommonClassMethodFields {
     //CHAT COMPONENTS
     public static Class<?> paperAdventureClass;
     public static Field wrapperAwareSerializerField;
-    public static Method serializeMethod;
-    public static Object serializeObject;
+    public static Method adventureSerializeMethod;
+    public static Object wrapperAwareObject;
+
+    public static Method adventureDeserializeMethod;
+    public static Object adventureDeserializeObject;
 
 
     //METADATA
@@ -120,8 +123,10 @@ public class CommonClassMethodFields {
             paperAdventureClass = Class.forName("io.papermc.paper.adventure.PaperAdventure");
             wrapperAwareSerializerField = paperAdventureClass.getDeclaredField("WRAPPER_AWARE_SERIALIZER");
             wrapperAwareSerializerField.setAccessible(true);
-            serializeObject = wrapperAwareSerializerField.get(null);
-            serializeMethod = ComponentSerializer.class.getMethod("serialize", Component.class);
+            wrapperAwareObject = wrapperAwareSerializerField.get(null);
+            adventureSerializeMethod = ComponentSerializer.class.getMethod("serialize", Component.class);
+            adventureDeserializeMethod = ComponentSerializer.class.getMethod("deserialize", Object.class);
+
 
 
 
@@ -175,7 +180,7 @@ public class CommonClassMethodFields {
 
             minecraftServerConnection = getMinecraftServerConnection.invoke(minecraftServerGetServer);
             getConnections = minecraftServerConnectionClass.getDeclaredMethod(Letters.getConnections);
-            if(List.of("1202").contains(Letters.getBukkitVersion()))
+            if(List.of("1202", "1203", "1204").contains(Letters.getBukkitVersion()))
                 serverConnections = (List<?>) getConnections.invoke(minecraftServerConnection);
             getRemoteAddressMethod = networkManagerClass.getDeclaredMethod(Letters.getRemoteAddress);
             //Continues for packet injector
