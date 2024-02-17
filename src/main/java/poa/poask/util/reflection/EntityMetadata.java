@@ -251,12 +251,12 @@ public class EntityMetadata {
     }
     @SneakyThrows
     public void setRotationLeft(double x, double y, double z, double w){
-        dataList.add(dataValueConstructor.newInstance(13, dataSerializerClass.getDeclaredField(Letters.getDataSerializersQuaternion).get(null), new Quaternionf(x,y,z,w)));
+        dataList.add(dataValueConstructor.newInstance(13, dataSerializersClass.getDeclaredField(Letters.getDataSerializersQuaternion).get(null), new Quaternionf(x,y,z,w)));
     }
 
     @SneakyThrows
     public void setRotationRight(double x, double y, double z, double w){
-        dataList.add(dataValueConstructor.newInstance(14, dataSerializerClass.getDeclaredField(Letters.getDataSerializersQuaternion).get(null), new Quaternionf(x,y,z,w)));
+        dataList.add(dataValueConstructor.newInstance(14, dataSerializersClass.getDeclaredField(Letters.getDataSerializersQuaternion).get(null), new Quaternionf(x,y,z,w)));
     }
 
     @SneakyThrows
@@ -268,7 +268,7 @@ public class EntityMetadata {
             case "horizontal" -> b = (byte) 2;
             case "center" -> b = (byte) 3;
         }
-        dataList.add(dataValueConstructor.newInstance(15, dataSerializerClass.getDeclaredField(Letters.dataSerializersByte).get(null), b));
+        dataList.add(dataValueConstructor.newInstance(15, dataSerializersClass.getDeclaredField(Letters.dataSerializersByte).get(null), b));
     }
 
 

@@ -142,7 +142,7 @@ public class EffRawMetadata extends Effect {
                         case "width" -> metadata.setWidth(Float.parseFloat(args[2]));
                         case "height" -> metadata.setHeight(Float.parseFloat(args[2]));
                         case "glow override" -> metadata.setGlowOverride(Integer.parseInt(args[3]));
-                        case "text" -> metadata.setText(String.join(" ", Arrays.copyOfRange(args, 2, args.length-1)));
+                        case "text" -> metadata.setText(String.join(" ", Arrays.copyOfRange(args, 2, args.length)));
                     }
                 }
             }
