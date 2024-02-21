@@ -3,10 +3,8 @@ package poa.poask.util.reflection;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Item;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import poa.poask.util.reflection.common.CommonClassMethodFields;
@@ -14,7 +12,6 @@ import poa.poask.util.reflection.common.Letters;
 
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -93,7 +90,7 @@ public class EntityMetadata {
 
     @SneakyThrows
     public void setGravity(boolean hasGravity){
-        dataList.add(dataValueConstructor.newInstance(5, dataSerializersClass.getDeclaredField(Letters.dataSerializersBoolean).get(null), hasGravity));
+        dataList.add(dataValueConstructor.newInstance(5, dataSerializersClass.getDeclaredField(Letters.dataSerializersBoolean).get(null), !hasGravity));
     }
 
     @SneakyThrows
@@ -226,37 +223,44 @@ public class EntityMetadata {
         dataList.add(dataValueConstructor.newInstance(23, dataSerializersClass.getDeclaredField(Letters.dataSerializersItemStack).get(null), nmsItemStack));
     }
 
+
+
+    @SneakyThrows
+    public void setDisplayBlock(BlockData blockData) {
+        dataList.add(dataValueConstructor.newInstance(23, dataSerializersClass.getDeclaredField(Letters.dataSerializersBlockState).get(null), CommonClassMethodFields.getState(blockData)));
+    }
+
     @SneakyThrows
     public void setInterpolationDelay(int delay){
-        dataList.add(dataValueConstructor.newInstance(8, dataSerializersClass.getDeclaredField(Letters.getDataSerializersInt).get(null), delay));
+        dataList.add(dataValueConstructor.newInstance(8, dataSerializersClass.getDeclaredField(Letters.dataSerializersInt).get(null), delay));
     }
 
     @SneakyThrows
     public void setTransformationDuration(int duration){
-        dataList.add(dataValueConstructor.newInstance(9, dataSerializersClass.getDeclaredField(Letters.getDataSerializersInt).get(null), duration));
+        dataList.add(dataValueConstructor.newInstance(9, dataSerializersClass.getDeclaredField(Letters.dataSerializersInt).get(null), duration));
     }
 
     @SneakyThrows
     public void setPosRotDuration(int duration){
-        dataList.add(dataValueConstructor.newInstance(10, dataSerializersClass.getDeclaredField(Letters.getDataSerializersInt).get(null), duration));
+        dataList.add(dataValueConstructor.newInstance(10, dataSerializersClass.getDeclaredField(Letters.dataSerializersInt).get(null), duration));
     }
 
     @SneakyThrows
     public void setTranslation(float x, float y, float z){
-        dataList.add(dataValueConstructor.newInstance(11, dataSerializersClass.getDeclaredField(Letters.getDataSerializersVector).get(null), new Vector3f(x,y,z)));
+        dataList.add(dataValueConstructor.newInstance(11, dataSerializersClass.getDeclaredField(Letters.dataSerializersVector).get(null), new Vector3f(x,y,z)));
     }
     @SneakyThrows
     public void setScale(float x, float y, float z){
-        dataList.add(dataValueConstructor.newInstance(12, dataSerializersClass.getDeclaredField(Letters.getDataSerializersVector).get(null), new Vector3f(x,y,z)));
+        dataList.add(dataValueConstructor.newInstance(12, dataSerializersClass.getDeclaredField(Letters.dataSerializersVector).get(null), new Vector3f(x,y,z)));
     }
     @SneakyThrows
     public void setRotationLeft(double x, double y, double z, double w){
-        dataList.add(dataValueConstructor.newInstance(13, dataSerializersClass.getDeclaredField(Letters.getDataSerializersQuaternion).get(null), new Quaternionf(x,y,z,w)));
+        dataList.add(dataValueConstructor.newInstance(13, dataSerializersClass.getDeclaredField(Letters.dataSerializersQuaternion).get(null), new Quaternionf(x,y,z,w)));
     }
 
     @SneakyThrows
     public void setRotationRight(double x, double y, double z, double w){
-        dataList.add(dataValueConstructor.newInstance(14, dataSerializersClass.getDeclaredField(Letters.getDataSerializersQuaternion).get(null), new Quaternionf(x,y,z,w)));
+        dataList.add(dataValueConstructor.newInstance(14, dataSerializersClass.getDeclaredField(Letters.dataSerializersQuaternion).get(null), new Quaternionf(x,y,z,w)));
     }
 
     @SneakyThrows
@@ -275,43 +279,43 @@ public class EntityMetadata {
 
     @SneakyThrows
     public void setBrightness(int brightness){
-        dataList.add(dataValueConstructor.newInstance(16, dataSerializersClass.getDeclaredField(Letters.getDataSerializersInt).get(null), brightness));
+        dataList.add(dataValueConstructor.newInstance(16, dataSerializersClass.getDeclaredField(Letters.dataSerializersInt).get(null), brightness));
     }
 
 
     @SneakyThrows
     public void setViewRange(float viewRange){
-        dataList.add(dataValueConstructor.newInstance(17, dataSerializersClass.getDeclaredField(Letters.getDataSerializersFloat).get(null), viewRange));
+        dataList.add(dataValueConstructor.newInstance(17, dataSerializersClass.getDeclaredField(Letters.dataSerializersFloat).get(null), viewRange));
     }
 
     @SneakyThrows
     public void setShadowRadius(float shadowRadius){
-        dataList.add(dataValueConstructor.newInstance(18, dataSerializersClass.getDeclaredField(Letters.getDataSerializersFloat).get(null), shadowRadius));
+        dataList.add(dataValueConstructor.newInstance(18, dataSerializersClass.getDeclaredField(Letters.dataSerializersFloat).get(null), shadowRadius));
     }
 
     @SneakyThrows
     public void setShadowStrength(float shadowStrength){
-        dataList.add(dataValueConstructor.newInstance(19, dataSerializersClass.getDeclaredField(Letters.getDataSerializersFloat).get(null), shadowStrength));
+        dataList.add(dataValueConstructor.newInstance(19, dataSerializersClass.getDeclaredField(Letters.dataSerializersFloat).get(null), shadowStrength));
     }
 
     @SneakyThrows
     public void setWidth(float width){
-        dataList.add(dataValueConstructor.newInstance(20, dataSerializersClass.getDeclaredField(Letters.getDataSerializersFloat).get(null), width));
+        dataList.add(dataValueConstructor.newInstance(20, dataSerializersClass.getDeclaredField(Letters.dataSerializersFloat).get(null), width));
     }
 
     @SneakyThrows
     public void setHeight(float height){
-        dataList.add(dataValueConstructor.newInstance(21, dataSerializersClass.getDeclaredField(Letters.getDataSerializersFloat).get(null), height));
+        dataList.add(dataValueConstructor.newInstance(21, dataSerializersClass.getDeclaredField(Letters.dataSerializersFloat).get(null), height));
     }
 
     @SneakyThrows
     public void setGlowOverride(int glowOverride){
-        dataList.add(dataValueConstructor.newInstance(22, dataSerializersClass.getDeclaredField(Letters.getDataSerializersInt).get(null), glowOverride));
+        dataList.add(dataValueConstructor.newInstance(22, dataSerializersClass.getDeclaredField(Letters.dataSerializersInt).get(null), glowOverride));
     }
 
     @SneakyThrows
     public void setText(Component component){
-        dataList.add(dataValueConstructor.newInstance(23, dataSerializersClass.getDeclaredField(Letters.getDataSerializersComponent).get(null), ChatComponents.nmsComponent(component)));
+        dataList.add(dataValueConstructor.newInstance(23, dataSerializersClass.getDeclaredField(Letters.dataSerializersComponent).get(null), ChatComponents.nmsComponent(component)));
     }
 
     public void setText(String miniMessageText){

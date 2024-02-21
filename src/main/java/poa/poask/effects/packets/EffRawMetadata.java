@@ -9,6 +9,7 @@ import ch.njol.skript.lang.VariableString;
 import ch.njol.util.Kleenean;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,18 +22,18 @@ import java.util.List;
 public class EffRawMetadata extends Effect {
 
     static {
-        Skript.registerEffect(EffRawMetadata.class, "add [data] [from|of] %string% [with %-itemtype%] to [packet] %object%");
+        Skript.registerEffect(EffRawMetadata.class, "add [data] [from|of] %string% [(with %-itemtype/blockdata%)] to [packet] %object%");
     }
 
     private Expression<String> input;
-    private Expression<Object> object;
+    private Expression<?> object;
     private Expression<Object> packet;
 
     @SuppressWarnings({"unchecked", "NullableProblems"})
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         input = (Expression<String>) exprs[0];
-        object = (Expression<Object>) exprs[1];
+        object = exprs[1];
         packet = (Expression<Object>) exprs[2];
         return true;
     }
@@ -123,6 +124,7 @@ public class EffRawMetadata extends Effect {
                 case "display" -> {
                     switch (args[1].toLowerCase()) {
                         case "item" -> metadata.setDisplayItem(((ItemType) object.getSingle(event)).getRandom());
+                        case "block" -> metadata.setDisplayBlock((BlockData) object.getSingle(event));
                     }
                     if(args.length < 3)
                         return;
