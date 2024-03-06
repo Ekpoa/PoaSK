@@ -7,15 +7,20 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import poa.poask.PoaSK;
+import poa.poask.util.reflection.common.CommonClassMethodFields;
 import poa.poask.util.reflection.common.Reflection;
+import poa.poask.util.reflection.common.SendPacket;
 
 import java.awt.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -25,12 +30,29 @@ public class EffBlockMarker extends Effect {
     static {
         Skript.registerEffect(
                 EffBlockMarker.class,
-                "create debug marker at %location% green amount %number% and %number% alpha with text %string% for %players%");
+                "create debug marker at %location% with %number%[,] %number%[,] %number% and alpha %number% with text %string% for %players%");
         Bukkit.getMessenger().registerOutgoingPluginChannel(PoaSK.getInstance(), "minecraft:debug/game_test_add_marker");
     }
 
+    private static final Class<?> markerClass = Reflection.getNMSClass("GameTestAddMarkerDebugPayload", "net.minecraft.network.protocol.common.custom");
+    public static final Class<?> blockPosClass = Reflection.getNMSClass("BlockPosition", "net.minecraft.core");
+    public static final Constructor<?> blockPosConstructor;
+    private static final Constructor<?> markerConstructor;
+
+    static {
+        try {
+            markerConstructor = markerClass.getDeclaredConstructor(blockPosClass, int.class, String.class, int.class);
+            blockPosConstructor = blockPosClass.getDeclaredConstructor(int.class, int.class, int.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     private Expression<Location> locationExpression;
+    private Expression<Number> redExpression;
     private Expression<Number> greenExpression;
+    private Expression<Number> blueExpression;
     private Expression<Number> alphaExpression;
     private Expression<String> idExpression;
     private Expression<Player> playerExpression;
@@ -39,42 +61,33 @@ public class EffBlockMarker extends Effect {
     @Override
     public boolean init(Expression<?> @NotNull [] exprs, int i, @NotNull Kleenean kleenean, @NotNull ParseResult parseResult) {
         locationExpression = (Expression<Location>) exprs[0];
-        greenExpression = (Expression<Number>) exprs[1];
-        alphaExpression = (Expression<Number>) exprs[2];
-        idExpression = (Expression<String>) exprs[3];
-        playerExpression = (Expression<Player>) exprs[4];
+        redExpression = (Expression<Number>) exprs[1];
+        greenExpression = (Expression<Number>) exprs[2];
+        blueExpression = (Expression<Number>) exprs[3];
+        alphaExpression = (Expression<Number>) exprs[4];
+        idExpression = (Expression<String>) exprs[5];
+        playerExpression = (Expression<Player>) exprs[6];
         return true;
     }
 
+    @SneakyThrows
     @Override
     protected void execute(@NotNull Event event) {
         if (playerExpression == null) return;
         Player[] players = playerExpression.getArray(event);
         if (players.length == 0) return;
-        Color color = new Color(0, greenExpression.getSingle(event).intValue(), 0, alphaExpression.getSingle(event).intValue());
+        org.bukkit.Color color = Color.fromARGB(alphaExpression.getSingle(event).intValue(), redExpression.getSingle(event).intValue(), greenExpression.getSingle(event).intValue(), blueExpression.getSingle(event).intValue());
         String name = idExpression.getSingle(event);
+
+        Location location = locationExpression.getSingle(event);
+        Object blockPos = blockPosConstructor.newInstance(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+
+        Object payload = markerConstructor.newInstance(blockPos, color.asARGB(), name, Integer.MAX_VALUE);
+
+        Object packet = EffBrand.packetConstructor.newInstance(payload);
+
         for (Player player : players) {
-            ByteBuf buf = Unpooled.buffer();
-            writeLocation(buf, locationExpression.getSingle(event));
-            buf.writeInt(color.getRGB());
-            writeString(buf, name);
-            int number = Integer.MAX_VALUE;
-            buf.writeInt(number);
-
-            Class<?> craftPlayer = Reflection.getOBCClass("entity.CraftPlayer");
-
-            try {
-                Method channelMethod = craftPlayer.getDeclaredMethod("addChannel", String.class);
-                channelMethod.invoke(player, "minecraft:debug/game_test_add_marker");
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
-                throw new RuntimeException(ex);
-            }
-
-
-            //((CraftPlayer) player).addChannel("minecraft:debug/game_test_add_marker");
-
-
-            player.sendPluginMessage(PoaSK.getInstance(), "minecraft:debug/game_test_add_marker", buf.array());
+            SendPacket.sendPacket(player, packet);
         }
     }
 

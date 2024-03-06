@@ -1,12 +1,15 @@
 package poa.poask.effects.packets;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.VariableString;
 import ch.njol.util.Kleenean;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,23 +22,26 @@ import java.util.List;
 public class EffRawMetadata extends Effect {
 
     static {
-        Skript.registerEffect(EffRawMetadata.class, "add [data] [from|of] %string% to [packet] %object%");
+        Skript.registerEffect(EffRawMetadata.class, "add [data] [from|of] %string% [(with %-itemtype/blockdata%)] to [packet] %object%");
     }
 
     private Expression<String> input;
+    private Expression<?> object;
     private Expression<Object> packet;
 
     @SuppressWarnings({"unchecked", "NullableProblems"})
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         input = (Expression<String>) exprs[0];
-        packet = (Expression<Object>) exprs[1];
+        object = exprs[1];
+        packet = (Expression<Object>) exprs[2];
         return true;
     }
 
     @SuppressWarnings("NullableProblems")
     @Override
     protected void execute(Event event) {
+
         String input = this.input.getSingle(event);
 
         if (this.input instanceof VariableString vs)
@@ -112,6 +118,33 @@ public class EffRawMetadata extends Effect {
                         case "body" ->
                                 metadata.setBodyRotation(Float.parseFloat(args[2]), Float.parseFloat(args[3]), Float.parseFloat(args[4]));
 
+                    }
+                }
+
+                case "display" -> {
+                    switch (args[1].toLowerCase()) {
+                        case "item" -> metadata.setDisplayItem(((ItemType) object.getSingle(event)).getRandom());
+                        case "block" -> metadata.setDisplayBlock((BlockData) object.getSingle(event));
+                    }
+                    if(args.length < 3)
+                        return;
+                    switch (args[1].toLowerCase()){
+                        case "interpolation delay" -> metadata.setInterpolationDelay(Integer.parseInt(args[3]));
+                        case "transformation duration" -> metadata.setTransformationDuration(Integer.parseInt(args[3]));
+                        case "posrot" -> metadata.setPosRotDuration(Integer.parseInt(args[2]));
+                        case "translation" -> metadata.setTranslation(Float.parseFloat(args[2]), Float.parseFloat(args[3]), Float.parseFloat(args[4]));
+                        case "scale" -> metadata.setScale(Float.parseFloat(args[2]), Float.parseFloat(args[3]), Float.parseFloat(args[4]));
+                        case "left rotation" -> metadata.setRotationLeft(Float.parseFloat(args[3]), Float.parseFloat(args[4]), Float.parseFloat(args[5]), Float.parseFloat(args[6]));
+                        case "right rotation" -> metadata.setRotationRight(Float.parseFloat(args[3]), Float.parseFloat(args[4]), Float.parseFloat(args[5]), Float.parseFloat(args[6]));
+                        case "billboard" -> metadata.setBillboard(args[2]);
+                        case "brightness" -> metadata.setBrightness(Integer.parseInt(args[2]));
+                        case "view range" -> metadata.setViewRange(Float.parseFloat(args[3]));
+                        case "shadow radius" -> metadata.setShadowRadius(Float.parseFloat(args[3]));
+                        case "shadow strength" -> metadata.setShadowStrength(Float.parseFloat(args[3]));
+                        case "width" -> metadata.setWidth(Float.parseFloat(args[2]));
+                        case "height" -> metadata.setHeight(Float.parseFloat(args[2]));
+                        case "glow override" -> metadata.setGlowOverride(Integer.parseInt(args[3]));
+                        case "text" -> metadata.setText(String.join(" ", Arrays.copyOfRange(args, 2, args.length)));
                     }
                 }
             }

@@ -1,10 +1,14 @@
 package poa.poask.util.reflection.common;
 
 import ch.njol.skript.Skript;
+import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 
+import javax.print.attribute.standard.JobKOctets;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -21,8 +25,11 @@ public class CommonClassMethodFields {
     //CHAT COMPONENTS
     public static Class<?> paperAdventureClass;
     public static Field wrapperAwareSerializerField;
-    public static Method serializeMethod;
-    public static Object serializeObject;
+    public static Method adventureSerializeMethod;
+    public static Object wrapperAwareObject;
+
+    public static Method adventureDeserializeMethod;
+    public static Object adventureDeserializeObject;
 
     //METADATA
     public static final Class<?> chatBaseComponent = Reflection.getNMSClass("IChatBaseComponent", "net.minecraft.network.chat");
@@ -116,8 +123,10 @@ public class CommonClassMethodFields {
             paperAdventureClass = Class.forName("io.papermc.paper.adventure.PaperAdventure");
             wrapperAwareSerializerField = paperAdventureClass.getDeclaredField("WRAPPER_AWARE_SERIALIZER");
             wrapperAwareSerializerField.setAccessible(true);
-            serializeObject = wrapperAwareSerializerField.get(null);
-            serializeMethod = ComponentSerializer.class.getMethod("serialize", Component.class);
+            wrapperAwareObject = wrapperAwareSerializerField.get(null);
+            adventureSerializeMethod = ComponentSerializer.class.getMethod("serialize", Component.class);
+            adventureDeserializeMethod = ComponentSerializer.class.getMethod("deserialize", Object.class);
+
 
             writeMethod = chatBaseComponent.getDeclaredMethod(Letters.chatComponentLiteral, String.class);
             dataValueConstructor = dataValueClass.getDeclaredConstructor(int.class, dataSerializerClass, Object.class);
@@ -156,7 +165,7 @@ public class CommonClassMethodFields {
 
             minecraftServerConnection = getMinecraftServerConnection.invoke(minecraftServerGetServer);
             getConnections = minecraftServerConnectionClass.getDeclaredMethod(Letters.getConnections);
-            if (List.of("1202").contains(Letters.getBukkitVersion()))
+            if(List.of("1202", "1203", "1204").contains(Letters.getBukkitVersion()))
                 serverConnections = (List<?>) getConnections.invoke(minecraftServerConnection);
             getRemoteAddressMethod = networkManagerClass.getDeclaredMethod(Letters.getRemoteAddress);
 
@@ -180,6 +189,42 @@ public class CommonClassMethodFields {
                  InvocationTargetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @SneakyThrows
+    public static Object itemAsBukkitCopy(ItemStack item){
+       return CommonClassMethodFields.fromBukkitCopy.invoke(CommonClassMethodFields.itemStackClass, item);
+    }
+
+    public static Class<?> craftBlockDataClass = Reflection.getOBCClass("block.data.CraftBlockData");
+    public static Class<?> blockClass = Reflection.getNMSClass("Block", "net.minecraft.world.level.block");
+    public static Class<?> blockStateClass = Reflection.getNMSClass("IBlockData","net.minecraft.world.level.block.state");
+
+    public static Method getIdMethod;
+    public static Method getState;
+    public static Field blockStateRegistryField;
+    public static Object blockStateRegistryObject;
+    static {
+        try {
+            blockStateRegistryField = blockClass.getDeclaredField(Letters.blockStateRegistry);
+            blockStateRegistryObject = blockStateRegistryField.get(null);
+
+            getIdMethod = blockClass.getDeclaredMethod(Letters.getId, blockStateClass);
+            getState = craftBlockDataClass.getDeclaredMethod("getState");
+        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @SneakyThrows
+    public static Object getState(BlockData blockData){
+        return getState.invoke(blockData);
+    }
+
+    @SneakyThrows
+    public static int getBlockId(BlockData blockData){
+        Object state = getState.invoke(blockData);
+        return (int) getIdMethod.invoke(blockClass, state);
     }
 
 }

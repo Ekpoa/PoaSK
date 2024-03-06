@@ -32,14 +32,23 @@ public class Letters {
     public static String dataSerializersPose = letter("v", "v", "v", "v", "u", "t", "t", "t"); //see above
     public static String dataSerializersItemStack = letter("h","h", "h", "h", "h", "g", "g", "g"); //see above
     public static String dataSerializersRotations = letter("m","m", "m", "m", "l", "k", "k", "k"); //see above
+    public static String dataSerializersInt = letter("b", "b", "b", "b", "b", "b", "b", "b");
+    public static String dataSerializersVector = letter("A", "A", "A", "A", "A", "A", "A", "A");
+    public static String dataSerializersQuaternion = letter("B", "B", "B", "B", "B", "B", "B", "B");
+    public static String dataSerializersFloat = letter("d", "d", "d", "d", "B", "B", "B", "B");
+    public static String dataSerializersComponent = letter("f","f", "f", "f", "f", "e", "e", "e");
+    public static String dataSerializersBlockState = letter("i", "i", "i", "i", "i", "h", "h", "h");
 
 
-    public static String getMinecraftServerConnection = letter("ad","ad", "ad", "ad", "ac", "ad", "ad", "ad");  //https://nms.screamingsandals.org/1.20.2/net/minecraft/server/MinecraftServer.html
+    public static String getMinecraftServerConnection = letter("af","ad", "ad", "ad", "ac", "ad", "ad", "ad");  //https://nms.screamingsandals.org/1.20.2/net/minecraft/server/MinecraftServer.html
     public static String getRemoteAddress = letter("f", "f", "c", "c", "c", "c", "c", "c"); //https://nms.screamingsandals.org/1.20.2/net/minecraft/network/Connection.html
     public static String getConnections = letter("e","e", "e", "e", "e", "e", "e", "e"); //https://nms.screamingsandals.org/1.20.2/net/minecraft/server/network/ServerConnectionListener.html
     public static String minecraftServerConnectionAddress = letter("n","n", "n", "n", "n", "n", "n", "n"); //https://nms.screamingsandals.org/1.19.3/net/minecraft/network/Connection.html
 
-    
+
+    public static String blockStateRegistry = letter("q", "o", "o", "o", "o", "o", "o", "o"); //https://nms.screamingsandals.org/1.19/net/minecraft/world/level/block/Block.html
+    public static String getId = letter("i", "i","i","i","i","i","i","i"); //https://nms.screamingsandals.org/1.19/net/minecraft/world/level/block/Block.html
+
     private static String letter(String v7, String v6, String v5, String v4, String v3, String v2, String v1, String v0) {
         return switch (getBukkitVersion()) {
             case "1203", "1204" -> v7;
