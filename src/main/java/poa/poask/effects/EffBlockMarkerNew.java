@@ -18,7 +18,9 @@ import org.jetbrains.annotations.NotNull;
 import poa.poask.util.reflection.common.McUtil;
 
 @Name("Create Debug Marker New") // Call this whatever you want!
-@Description("Create a colored debug marker at a location for players. Optionally you can add a text, alpha (transparency) and duration.")
+@Description({"Create a colored debug marker at a location for players.",
+    "Optionally you can add a text, alpha (transparency) and duration.",
+    "Requires Minecraft 1.20.2+"})
 @Examples({"create debug marker with color blue for player",
     "create debug marker with color rgb(200,100,100) for all players",
     "create debug marker with color red and with alpha 100 for all players",
