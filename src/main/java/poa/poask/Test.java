@@ -15,7 +15,7 @@ public class Test implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(sender instanceof Player player){
-            SendPacket.sendPacket(player, GlowPacket.glowPacket(player.getTargetEntity(10), true));
+          //  SendPacket.sendPacket(player, SetEquipmentPacket.packet(player.getTargetEntity(10).getEntityId(), args[0], player.getInventory().getItemInMainHand()));
 
         }
         return false;

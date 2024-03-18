@@ -117,6 +117,10 @@ public class CommonClassMethodFields {
     public static final Field playerConnection2;
 
 
+    //Other Stuff
+
+
+
     static {
         try {
             cameraPacketConstructor = cameraPacketClass.getDeclaredConstructor(FriendlyByteBuf.friendlyByteBufClass);

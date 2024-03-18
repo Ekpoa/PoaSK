@@ -69,7 +69,7 @@ public class FakePlayer {
     }
 
     @SneakyThrows
-    public static Object entityPlayer(Object nmsServer, Object nmsWorld, Object gameProfile){
+    public static Object serverPlayer(Object nmsServer, Object nmsWorld, Object gameProfile){
         return entityPlayerConstructor.newInstance(nmsServer, nmsWorld, gameProfile);
     }
 
@@ -92,6 +92,8 @@ public class FakePlayer {
     public static Object spawn(Object fakePlayer) {
         return  playOutEntitySpawnConstructor.newInstance(fakePlayer);
     }
+
+
 
 
 }

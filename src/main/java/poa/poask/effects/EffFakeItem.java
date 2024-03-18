@@ -13,14 +13,16 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import poa.poask.util.reflection.SetEquipmentPacket;
+import poa.poask.util.reflection.common.SendPacket;
 
 public class EffFakeItem extends Effect {
 
     static {
-        Skript.registerEffect(EffFakeItem.class, "fake %livingentities%'[s] equipment slot %string% to %itemtype% for %players%");
+        Skript.registerEffect(EffFakeItem.class, "fake %livingentities/numbers%['s] equipment slot %string% to %itemtype% for %players%");
     }
 
-    private Expression<LivingEntity> entities;
+    private Expression<?> entities;
     private Expression<String> slot;
     private Expression<ItemType> item;
     private Expression<Player> players;
@@ -28,7 +30,7 @@ public class EffFakeItem extends Effect {
     @SuppressWarnings({"NullableProblems", "unchecked"})
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
-        entities = (Expression<LivingEntity>) exprs[0];
+        entities = exprs[0];
         slot = (Expression<String>) exprs[1];
         item = (Expression<ItemType>) exprs[2];
         players = (Expression<Player>) exprs[3];
@@ -43,11 +45,17 @@ public class EffFakeItem extends Effect {
         if (slot == null || itemType == null) return;
 
         ItemStack itemStack = itemType.getRandom();
+
         EquipmentSlot equipmentSlot = EquipmentSlot.valueOf(slot.toUpperCase());
 
         for (Player player : this.players.getArray(event))
-            for (LivingEntity livingEntity : this.entities.getArray(event))
-                player.sendEquipmentChange(livingEntity, equipmentSlot, itemStack);
+            for (Object object : this.entities.getArray(event))
+                if(object instanceof LivingEntity livingEntity)
+                    player.sendEquipmentChange(livingEntity, equipmentSlot, itemStack);
+                else if (object instanceof Long)
+                    SendPacket.sendPacket(player, SetEquipmentPacket.packet(((Long) object).intValue(), slot, itemStack));
+
+
     }
 
     @SuppressWarnings("DataFlowIssue")
