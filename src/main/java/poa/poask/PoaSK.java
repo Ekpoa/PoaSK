@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public final class PoaSK extends JavaPlugin {
 
-    private static PoaSK INSTANCE;
+    public static PoaSK INSTANCE;
 
     @SuppressWarnings({"CallToPrintStackTrace", "DataFlowIssue"})
     @Override

@@ -1,22 +1,26 @@
 package poa.poask.util.reflection;
 
-import lombok.Builder;
+import com.google.common.collect.ForwardingMultimap;
 import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.json.JSONObject;
+import poa.poask.PoaSK;
 import poa.poask.util.reflection.common.CommonClassMethodFields;
 import poa.poask.util.reflection.common.Letters;
 import poa.poask.util.reflection.common.Reflection;
 import poa.poask.util.reflection.common.SendPacket;
 
-import javax.print.attribute.standard.JobKOctets;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,7 +40,11 @@ public class FakePlayer {
     private static final Class<?> serverPlayerClass = Reflection.getNMSClass("EntityPlayer", "net.minecraft.server.level");
     private static final Constructor<?> serverPlayerConstructor;
 
+
+    private static final Class<?> gamePropertiesClass = Reflection.getNMSClass("Property", "com.mojang.authlib.properties");
+    private static final Constructor<?> gamePropertiesConstructor;
     private static final Class<?> gameProfileClass = Reflection.getNMSClass("GameProfile", "com.mojang.authlib");
+    private static final Method getGameProfileProperties;
     private static final Constructor<?> gameProfileConstructor;
 
     private static final Class<?> playerClass = Reflection.getNMSClass("EntityHuman", "net.minecraft.world.entity.player");
@@ -84,6 +92,9 @@ public class FakePlayer {
 
             serverPlayerConstructor = serverPlayerClass.getConstructor(minecraftServerClass, level.getClass(), gameProfileClass, clientInformationClass);
 
+            gamePropertiesConstructor = gamePropertiesClass.getDeclaredConstructor(String.class, String.class, String.class);
+
+            getGameProfileProperties = gameProfileClass.getDeclaredMethod("getProperties");
             gameProfileConstructor = gameProfileClass.getConstructor(UUID.class, String.class);
             getGameProfileMethod = playerClass.getDeclaredMethod(Letters.getGameProfile); //https://nms.screamingsandals.org/1.20.4/net/minecraft/world/entity/player/Player.html
 
@@ -128,7 +139,15 @@ public class FakePlayer {
 
         setPosMethod.invoke(fakePlayer, location.getX(), location.getY(), location.getZ());
 
-        Object entry = infoUpdatePacketEntryConstructor.newInstance(uuid, getGameProfileMethod.invoke(fakePlayer), listed, latency, defaultGameType, emptyComponent, null);
+        Object fakePlayerGameProfile = getGameProfileMethod.invoke(fakePlayer);
+
+        ForwardingMultimap<String, Object> properties = (ForwardingMultimap<String, Object>) getGameProfileProperties.invoke(fakePlayerGameProfile);
+        properties.removeAll("textures");
+        Object textures = gamePropertiesConstructor.newInstance("textures", fetchSkinURL(uuid), fetchSkinSignature(uuid));
+        properties.put("textures", textures);
+
+
+        Object entry = infoUpdatePacketEntryConstructor.newInstance(uuid, fakePlayerGameProfile, listed, latency, defaultGameType, emptyComponent, null);
 
         Object addPlayerPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) addPlayer), entry);
 
@@ -153,7 +172,8 @@ public class FakePlayer {
                 SendPacket.sendPacket(player, updateListedPacket);
             if(latency > 0)
                 SendPacket.sendPacket(player, updateLatencyPacket);
-            SendPacket.sendPacket(player, spawnEntityPacket);
+
+            Bukkit.getScheduler().runTaskLater(PoaSK.getInstance(), () ->  SendPacket.sendPacket(player, spawnEntityPacket), 1L);
         }
     }
 
@@ -168,6 +188,7 @@ public class FakePlayer {
             throw new RuntimeException(e);
         }
     }
+
 
     @SneakyThrows
     public static void removeFakePlayerPacket(List<Player> sendTo, List<UUID> uuids){
@@ -193,5 +214,38 @@ public class FakePlayer {
     }
 
 
+    private static Map<UUID, HttpResponse<String>> skinMap = new HashMap<>();
+
+    @SneakyThrows
+    public static String fetchSkinURL(UUID uuid) {
+        if(!skinMap.containsKey(uuid)) {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false"))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            skinMap.put(uuid, response);
+            Bukkit.getScheduler().runTaskLater(PoaSK.getInstance(), () -> skinMap.remove(uuid), 1200L);
+        }
+        HttpResponse<String> response = skinMap.get(uuid);
+        if (response.statusCode() == 200) {
+            JSONObject jsonObject = new JSONObject(response.body());
+            String tr = jsonObject.getJSONArray("properties").getJSONObject(0).getString("value");
+            return tr;
+        }
+        return null;
+    }
+
+    @SneakyThrows
+    public static String fetchSkinSignature(UUID uuid) {
+        HttpResponse<String> response = skinMap.get(uuid);
+        if (response.statusCode() == 200) {
+            JSONObject jsonObject = new JSONObject(response.body());
+            String tr = jsonObject.getJSONArray("properties").getJSONObject(0).getString("signature");
+            return tr;
+        }
+        return null;
+    }
 
 }
