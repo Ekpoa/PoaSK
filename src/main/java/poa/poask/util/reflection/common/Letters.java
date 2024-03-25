@@ -49,6 +49,14 @@ public class Letters {
     public static String blockStateRegistry = letter("q", "o", "o", "o", "o", "o", "o", "o"); //https://nms.screamingsandals.org/1.19/net/minecraft/world/level/block/Block.html
     public static String getId = letter("i", "i","i","i","i","i","i","i"); //https://nms.screamingsandals.org/1.19/net/minecraft/world/level/block/Block.html
 
+
+
+    public static String getGameProfile = letter("fR", "fQ", null,null,null,null,null,null); //all the links are in the FakePlayer class
+    public static String createDefaultGameProfile = letter("a", "a", null,null,null,null,null,null);
+    public static String defaultGameType = letter("e", "e", null,null,null,null,null,null);
+    public static String emptyComponent = letter("i", "h", null, null, null, null,null,null);
+    public static String setPos = letter("a_", "e", null,null,null,null,null,null);
+
     private static String letter(String v7, String v6, String v5, String v4, String v3, String v2, String v1, String v0) {
         return switch (getBukkitVersion()) {
             case "1203", "1204" -> v7;
@@ -152,6 +160,7 @@ public class Letters {
     public static String Piglin = entityTypeLetter("ax","aw", "as", "ar");
     public static String PiglinBrute = entityTypeLetter("ay","ax", "at", "as");
     public static String Pillager = entityTypeLetter("az","ay", "au", "at");
+    public static String Player = entityTypeLetter("bv", "bt", "bo", "bn");
     public static String PolarBear = entityTypeLetter("aA","az", "av", "au");
     public static String Tnt = entityTypeLetter("aZ","aY", "aw", "av");
     public static String PufferFish = entityTypeLetter("aC","aB", "ax", "aw");

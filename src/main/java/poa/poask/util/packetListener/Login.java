@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import poa.poask.util.reflection.FakePlayer;
 import poa.poask.util.reflection.common.Letters;
 
 import java.util.HashMap;
@@ -30,6 +31,8 @@ public class Login implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         Player player = e.getPlayer();
+        FakePlayer.playerMapMap.remove(player);
+
         if (playerPacketStuffMap.containsKey(player)) {
             playerPacketStuffMap.get(player).uninjectPlayer();
             playerPacketStuffMap.remove(player);

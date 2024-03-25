@@ -10,13 +10,14 @@ import org.jetbrains.annotations.NotNull;
 import poa.poask.util.reflection.*;
 import poa.poask.util.reflection.common.SendPacket;
 
+import java.util.List;
+
 public class Test implements CommandExecutor {
     @SneakyThrows
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(sender instanceof Player player){
-          //  SendPacket.sendPacket(player, SetEquipmentPacket.packet(player.getTargetEntity(10).getEntityId(), args[0], player.getInventory().getItemInMainHand()));
-
+            FakePlayer.fakePlayer(List.of(player), args[0], player.getLocation(), true, Integer.parseInt(args[1]));
         }
         return false;
     }

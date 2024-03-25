@@ -1,5 +1,5 @@
 name: PoaSK
-version: 3.3.3
+version: 3.4
 main: poa.poask.PoaSK
 api-version: 1.19
 depend:

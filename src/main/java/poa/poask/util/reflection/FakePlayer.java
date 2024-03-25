@@ -1,98 +1,196 @@
 package poa.poask.util.reflection;
 
+import lombok.Builder;
 import lombok.SneakyThrows;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import poa.poask.util.reflection.common.CommonClassMethodFields;
+import poa.poask.util.reflection.common.Letters;
 import poa.poask.util.reflection.common.Reflection;
+import poa.poask.util.reflection.common.SendPacket;
 
+import javax.print.attribute.standard.JobKOctets;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class FakePlayer {
-        //NOT REAL
-    public static Class<?> infoUpdatePacketClass = Reflection.getNMSClass("ClientboundPlayerInfoUpdatePacket", "net.minecraft.network.protocol.game");
-    public static Class<?> infoUpdatePacketActionClass = Reflection.getNMSClass("ClientboundPlayerInfoUpdatePacket$a", "net.minecraft.network.protocol.game");
-    public static Class<?> serverPlayerClass = Reflection.getNMSClass("EntityPlayer", "net.minecraft.server.level");
-    public static Class<?> playOutNamedEntitySpawnPacketClass = Reflection.getNMSClass("PacketPlayOutNamedEntitySpawn", "net.minecraft.network.protocol.game");
-    public static Class<?> playerClass = Reflection.getNMSClass("EntityHuman", "net.minecraft.world.entity.player");
-    public static Class<?> gameProfileClass = Reflection.getNMSClass("GameProfile", "com.mojang.authlib");
-    public static Class<?> entityPlayerClass = Reflection.getNMSClass("EntityPlayer", "net.minecraft.server.level");
-    public static Class<?> worldClass = Reflection.getNMSClass("WorldServer", "net.minecraft.server.level");
-    public static Class<?> serverClass = Reflection.getNMSClass("MinecraftServer", "net.minecraft.server");
-    public static Class<?> entityClass = Reflection.getNMSClass("Entity", "net.minecraft.world.entity");
 
-    public static Constructor<?> infoPacketConstructor;
-    public static Constructor<?> playOutEntitySpawnConstructor;
-    public static Constructor<?> gameProfileConstructor;
-    public static Constructor<?> entityPlayerConstructor;
+    private static final Class<?> minecraftServerClass = CommonClassMethodFields.minecraftServerClass;
 
-    public static Method setPosMethod;
+    private static final Method getServerMethod;
+    private static final Object server;
 
-    public static List<?> infoUpdateActionEnums = Arrays.stream(infoUpdatePacketActionClass.getEnumConstants()).toList();
+    private static final Class<?> craftWorldClass = Reflection.getOBCClass("CraftWorld");
+    private static final Method craftWorldGetHandle;
+    private static Object level;
 
-    public static Object infoUpdateActionADD_PLAYER;
-    public static Object infoUpdateActionUPDATE_LISTED;
+
+    private static final Class<?> serverPlayerClass = Reflection.getNMSClass("EntityPlayer", "net.minecraft.server.level");
+    private static final Constructor<?> serverPlayerConstructor;
+
+    private static final Class<?> gameProfileClass = Reflection.getNMSClass("GameProfile", "com.mojang.authlib");
+    private static final Constructor<?> gameProfileConstructor;
+
+    private static final Class<?> playerClass = Reflection.getNMSClass("EntityHuman", "net.minecraft.world.entity.player");
+    private static final Method getGameProfileMethod;
+    private static final Class<?> clientInformationClass = Reflection.getNMSClass("ClientInformation", "net.minecraft.server.level");
+    private static final Object clientInformationDefault;
+
+    private static final Class<?> entityClass = Reflection.getNMSClass("Entity", "net.minecraft.world.entity");
+    private static final Method setPosMethod;
+
+
+
+    private static final Class<?> infoUpdatePacketEntryClass = Reflection.getNMSClass("ClientboundPlayerInfoUpdatePacket$b", "net.minecraft.network.protocol.game");
+    private static final Constructor<?> infoUpdatePacketEntryConstructor;
+    private static final Class<?> gameTypeClass = Reflection.getNMSClass("EnumGamemode", "net.minecraft.world.level");
+    private static final Object defaultGameType;
+    private static final Object emptyComponent;
+    private static final Class<?> remoteChatSessionDataClass = Reflection.getNMSClass("RemoteChatSession$a", "net.minecraft.network.chat");
+    private static final Class<?> infoUpdatePacketActionClass = Reflection.getNMSClass("ClientboundPlayerInfoUpdatePacket$a", "net.minecraft.network.protocol.game");
+    private static final Method getActionValueOf;
+    private static final Object addPlayer;
+    private static final Object updateListed;
+    private static final Object updateLatency;
+
+    private static final Class<?> infoUpdatePacketClass = Reflection.getNMSClass("ClientboundPlayerInfoUpdatePacket", "net.minecraft.network.protocol.game");
+    private static final Constructor<?> infoUpdatePacketConstructor;
+
+    private static final Class<?> addEntityPacketClass = CommonClassMethodFields.spawnPacketClass;
+    private static final Constructor<?> addEntityPacketConstructor;
+
+    //private static final Method getBukkitEntity;
+
+    //private static final Class<?> bukkitEntityClass = Reflection.getOBCClass("CraftEntity");
+    //private static final Method getEntityId;
 
 
     static {
         try {
-            infoPacketConstructor = infoUpdatePacketClass.getDeclaredConstructor(infoUpdatePacketActionClass, serverPlayerClass);
-            playOutEntitySpawnConstructor = playOutNamedEntitySpawnPacketClass.getDeclaredConstructor(playerClass);
-            gameProfileConstructor = gameProfileClass.getDeclaredConstructor(UUID.class, String.class);
-            entityPlayerConstructor = entityPlayerClass.getDeclaredConstructor(serverClass, worldClass, gameProfileClass);
+            getServerMethod = minecraftServerClass.getMethod("getServer");
+            server = getServerMethod.invoke(Bukkit.getServer());
 
-            setPosMethod = entityClass.getDeclaredMethod("e", double.class, double.class, double.class);
 
-            for (Object object : infoUpdateActionEnums)
-                if(object.toString().equalsIgnoreCase("ADD_PLAYER")){
-                    infoUpdateActionADD_PLAYER = object;
-                    break;
-                }
-            for (Object object : infoUpdateActionEnums)
-                if(object.toString().equalsIgnoreCase("UPDATE_LISTED")){
-                    infoUpdateActionUPDATE_LISTED = object;
-                    break;
-                }
+            craftWorldGetHandle = craftWorldClass.getDeclaredMethod("getHandle");
+            level = craftWorldGetHandle.invoke(Bukkit.getWorlds().get(0));
 
+            serverPlayerConstructor = serverPlayerClass.getConstructor(minecraftServerClass, level.getClass(), gameProfileClass, clientInformationClass);
+
+            gameProfileConstructor = gameProfileClass.getConstructor(UUID.class, String.class);
+            getGameProfileMethod = playerClass.getDeclaredMethod(Letters.getGameProfile); //https://nms.screamingsandals.org/1.20.4/net/minecraft/world/entity/player/Player.html
+
+            clientInformationDefault = clientInformationClass.getDeclaredMethod(Letters.createDefaultGameProfile).invoke(clientInformationClass); //https://nms.screamingsandals.org/1.20.4/net/minecraft/server/level/ClientInformation.html
+
+            setPosMethod = entityClass.getDeclaredMethod(Letters.setPos, double.class, double.class, double.class); //https://nms.screamingsandals.org/1.20.4/net/minecraft/world/entity/Entity.html
+
+            infoUpdatePacketEntryConstructor = infoUpdatePacketEntryClass.getDeclaredConstructor(UUID.class, gameProfileClass, boolean.class, int.class, gameTypeClass, CommonClassMethodFields.chatBaseComponent, remoteChatSessionDataClass);
+            getActionValueOf = infoUpdatePacketActionClass.getDeclaredMethod("valueOf", String.class);
+
+
+            addPlayer = getActionValueOf.invoke(infoUpdatePacketEntryClass, "ADD_PLAYER");
+            updateListed = getActionValueOf.invoke(infoUpdatePacketEntryClass, "UPDATE_LISTED");
+            updateLatency = getActionValueOf.invoke(infoUpdatePacketEntryClass, "UPDATE_LATENCY");
+
+
+            defaultGameType = gameTypeClass.getDeclaredField(Letters.defaultGameType).get(null); //https://nms.screamingsandals.org/1.20.4/net/minecraft/world/level/GameType.html
+            emptyComponent = CommonClassMethodFields.chatBaseComponent.getDeclaredMethod(Letters.emptyComponent).invoke(CommonClassMethodFields.chatBaseComponent); //https://nms.screamingsandals.org/1.20.4/net/minecraft/network/chat/Component.html
+
+            infoUpdatePacketConstructor = infoUpdatePacketClass.getDeclaredConstructor(EnumSet.class, infoUpdatePacketEntryClass);
+
+            addEntityPacketConstructor = addEntityPacketClass.getDeclaredConstructor(entityClass);
+
+            //getBukkitEntity = serverPlayerClass.getDeclaredMethod("getBukkitEntity");
+//            getEntityId = bukkitEntityClass.getDeclaredMethod("getEntityId");
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ConcurrentMap<Player, Map<UUID, Integer>> playerMapMap = new ConcurrentHashMap<>(); //handled in Login class
+
+
+    @SneakyThrows
+    public static void fakePlayer(List<Player> sendTo, String name, Location location, boolean listed, int latency){
+        OfflinePlayer op = Bukkit.getOfflinePlayer(name);
+
+        UUID uuid = op.getUniqueId();
+        Object gameProfile = gameProfileConstructor.newInstance(uuid, name);
+
+        Object fakePlayer = serverPlayerConstructor.newInstance(server, level, gameProfile, clientInformationDefault);
+
+        setPosMethod.invoke(fakePlayer, location.getX(), location.getY(), location.getZ());
+
+        Object entry = infoUpdatePacketEntryConstructor.newInstance(uuid, getGameProfileMethod.invoke(fakePlayer), listed, latency, defaultGameType, emptyComponent, null);
+
+        Object addPlayerPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) addPlayer), entry);
+
+        Object updateListedPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) updateListed), entry);
+        Object updateLatencyPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) updateLatency), entry);
+
+        Object spawnEntityPacket = addEntityPacketConstructor.newInstance(fakePlayer);
+
+        Method getBukkitEntity = fakePlayer.getClass().getDeclaredMethod("getBukkitEntity");
+
+        Entity bukkitEntity = (Entity) getBukkitEntity.invoke(fakePlayer);
+        int id = bukkitEntity.getEntityId();
+
+        for (Player player : sendTo) {
+            SendPacket.sendPacket(player, addPlayerPacket);
+            Map<UUID, Integer> innerMap = new HashMap<>();
+            innerMap.put(uuid, id);
+
+            playerMapMap.put(player, innerMap);
+
+            if(listed)
+                SendPacket.sendPacket(player, updateListedPacket);
+            if(latency > 0)
+                SendPacket.sendPacket(player, updateLatencyPacket);
+            SendPacket.sendPacket(player, spawnEntityPacket);
+        }
+    }
+
+
+    private static final Class<?> removePlayerPacket = Reflection.getNMSClass("ClientboundPlayerInfoRemovePacket", "net.minecraft.network.protocol.game");
+    private static final Constructor<?> removePlayerPacketConstructor;
+
+    static {
+        try {
+            removePlayerPacketConstructor = removePlayerPacket.getDeclaredConstructor(List.class);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
-
-    }
-
-    
-    @SneakyThrows
-    public static Object gameProfile(UUID uuid, String name){
-        return gameProfileConstructor.newInstance(uuid, name);
     }
 
     @SneakyThrows
-    public static Object serverPlayer(Object nmsServer, Object nmsWorld, Object gameProfile){
-        return entityPlayerConstructor.newInstance(nmsServer, nmsWorld, gameProfile);
-    }
+    public static void removeFakePlayerPacket(List<Player> sendTo, List<UUID> uuids){
+        Object removeDataPacket = removePlayerPacketConstructor.newInstance(uuids);
 
-    @SneakyThrows
-    public static void setEntityPlayerPos(Object entityPlayer, Location location){
-        setPosMethod.invoke(entityPlayer, location.getX(), location.getY(), location.getZ());
-    }
+        for(Player p : sendTo) {
+            List<Integer> ids = new ArrayList<>();
+            Map<UUID, Integer> playerMap = playerMapMap.get(p);
+            for (UUID uuid : uuids) {
+                ids.add(playerMap.get(uuid));
+                playerMap.remove(uuid);
+            }
 
-    @SneakyThrows
-    public static Object addPacket(Object fakePlayer) {
-        return infoPacketConstructor.newInstance(infoUpdateActionADD_PLAYER, fakePlayer);
-    }
+            Object removeEntityPacket = RemoveEntityPacket.removeEntityPacket(ids.stream()
+                    .mapToInt(Integer::intValue)
+                    .toArray());
+            SendPacket.sendPacket(p, removeDataPacket);
+            SendPacket.sendPacket(p, removeEntityPacket);
 
-    @SneakyThrows
-    public static Object updatePacket(Object fakePlayer) {
-        return infoPacketConstructor.newInstance(infoUpdateActionUPDATE_LISTED, fakePlayer);
-    }
+            playerMapMap.put(p, playerMap);
 
-    @SneakyThrows
-    public static Object spawn(Object fakePlayer) {
-        return  playOutEntitySpawnConstructor.newInstance(fakePlayer);
+        }
     }
-
 
 
 
