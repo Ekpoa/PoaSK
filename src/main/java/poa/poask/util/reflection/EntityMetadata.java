@@ -334,6 +334,16 @@ public class EntityMetadata {
 
 
 
+    //Interaction Entity
+    @SneakyThrows
+    public void setInteractionWidth(Float width){
+        dataList.add(dataValueConstructor.newInstance(8, dataSerializersClass.getDeclaredField(Letters.dataSerializersFloat).get(null), width));
+    }
+
+    @SneakyThrows
+    public void setInteractionHeight(Float height){
+        dataList.add(dataValueConstructor.newInstance(9, dataSerializersClass.getDeclaredField(Letters.dataSerializersFloat).get(null), height));
+    }
 
 
 

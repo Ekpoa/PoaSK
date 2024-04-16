@@ -10,12 +10,17 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
+import poa.poask.effects.EffGlowEffect;
 import poa.poask.util.reflection.ChatComponents;
 import poa.poask.util.reflection.common.CommonClassMethodFields;
+import poa.poask.util.reflection.common.Letters;
 import poa.poask.util.reflection.common.Reflection;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.List;
+
+import static poa.poask.util.reflection.common.CommonClassMethodFields.dataSerializersClass;
 
 public class PacketHandler extends ChannelDuplexHandler {
 
@@ -34,12 +39,38 @@ public class PacketHandler extends ChannelDuplexHandler {
     public static Method getZ;
 
 
+    public static Class<?> setEntityDataPacketClass = CommonClassMethodFields.metadataPacketClass;
+    public static Class<?> synchedEntityDataClass = CommonClassMethodFields.dataValueClass;
+    public static Method packedItemsMethod;
+    public static Method getValueMethod;
+    public static Method getIdMethod;
+
+    public static Method metadataPacketID;
+
+
+
+
     static {
         try {
             getBlockState = blockChangePacketClass.getDeclaredMethod("a");
 
-            contentsMethod = systemChatPacketClass.getDeclaredMethod("a"); //https://nms.screamingsandals.org/1.20.4/net/minecraft/network/protocol/game/ClientboundSystemChatPacket.html
+            if(Letters.getBukkitVersion().equalsIgnoreCase("1204"))
+                contentsMethod = systemChatPacketClass.getDeclaredMethod("a"); //https://nms.screamingsandals.org/1.20.4/net/minecraft/network/protocol/game/ClientboundSystemChatPacket.html
+            else
+                contentsMethod = systemChatPacketClass.getDeclaredMethod("adventure$content");
+
             overlayMethod = systemChatPacketClass.getDeclaredMethod("d"); //^
+
+
+
+            packedItemsMethod = setEntityDataPacketClass.getDeclaredMethod("d"); //https://nms.screamingsandals.org/1.20.4/net/minecraft/network/protocol/game/ClientboundSetEntityDataPacket.html
+            getIdMethod = synchedEntityDataClass.getDeclaredMethod("a"); //https://nms.screamingsandals.org/1.20.4/net/minecraft/network/syncher/SynchedEntityData$DataValue.html
+            getValueMethod = synchedEntityDataClass.getDeclaredMethod("c"); //^
+
+
+            metadataPacketID = setEntityDataPacketClass.getDeclaredMethod("a"); //https://nms.screamingsandals.org/1.20.4/net/minecraft/network/protocol/game/ClientboundSystemChatPacket.html
+
+
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
@@ -119,13 +150,95 @@ public class PacketHandler extends ChannelDuplexHandler {
                             ChatComponents.adventureComponent(contentsMethod.invoke(msg)));
                     Bukkit.getServer().getPluginManager().callEvent(actionBarEvent);
 
-                    //todo set actionbar
 
-                    if(actionBarEvent.isCancelled())
+                    if (actionBarEvent.isCancelled())
                         return;
 
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                catch (Exception e){
+            }
+
+            case "PacketPlayOutEntityMetadata" -> {
+                try {
+                    int entityId = (int) metadataPacketID.invoke(msg);
+
+                    Object serverLevel = CommonClassMethodFields.getServerLevel(player.getWorld());
+                    if(serverLevel == null){
+                        super.write(ctx, msg, promise);
+                        return;
+                    }
+
+                    if(!(CommonClassMethodFields.getEntityFromId(entityId, serverLevel, true) instanceof Player target)){
+                        super.write(ctx, msg, promise);
+                        return;
+                    }
+
+                    if(target.isGlowing()){
+                        super.write(ctx, msg, promise);
+                        return;
+                    }
+
+
+                    boolean glow = true;
+
+
+                    List<Integer> ids = EffGlowEffect.glowMap.get(player);
+
+                    //Bukkit.broadcastMessage(entityId + " : " + Bukkit.getPlayer("Ekpoa").getEntityId());
+
+                    if(entityId != target.getEntityId()){
+                        super.write(ctx, msg, promise);
+                        return;
+                    }
+
+                    if (ids == null) {
+                       // Bukkit.broadcastMessage("a");
+                        glow = false;
+                    } else if (ids.isEmpty()) {
+                        //Bukkit.broadcastMessage("b");
+                        glow = false;
+                    } else if (!ids.contains(entityId)) {
+                       // Bukkit.broadcastMessage("c : " + entityId + " ~ Poa: " + Bukkit.getPlayer("Ekpoa").getEntityId());
+                        glow = false;
+                    }
+
+                    //Bukkit.broadcastMessage("§cFinal Glow state: " + glow + " : " + player.getName());
+
+
+                    List<Object> packedItems = (List<Object>) packedItemsMethod.invoke(msg);
+
+                    for (int i = 0; i < packedItems.size(); i++) {
+                        Object dataValue = packedItems.get(i);
+
+                        if ((int) getIdMethod.invoke(dataValue) != 0)
+                            continue;
+
+                        byte value = (byte) getValueMethod.invoke(dataValue);
+
+                        if (glow) {
+                          //  Bukkit.broadcastMessage("checking to add :" + player.getName());
+                            if (((value & 0x40) == 0)) {
+                             //   Bukkit.broadcastMessage("added :" + player.getName());
+                                value |= 0x40;
+                            }
+                        } else {
+                            //Bukkit.broadcastMessage("checking to remove :" + player.getName());
+                            if (((value & 0x40) != 0)) {
+                            //    Bukkit.broadcastMessage("removed :" + player.getName());
+                                value &= ~0x40;
+                            }
+                        }
+
+                        packedItems.set(i, CommonClassMethodFields.dataValueConstructor.newInstance(0, dataSerializersClass.getDeclaredField(Letters.dataSerializersByte).get(null), value));
+                        msg = CommonClassMethodFields.metadataPacketConstructor.newInstance(entityId, packedItems);
+
+                        break;
+
+                    }
+
+
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

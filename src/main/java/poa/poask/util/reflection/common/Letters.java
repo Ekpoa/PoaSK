@@ -57,6 +57,11 @@ public class Letters {
     public static String emptyComponent = letter("i", "h", null, null, null, null,null,null);
     public static String setPos = letter("a_", "e", null,null,null,null,null,null);
 
+    public static String getServerLevel = letter("z", "x", "x", "x", "y", "x", "x", "x"); //https://nms.screamingsandals.org/1.19/net/minecraft/server/level/ServerPlayer.html
+    public static String getEntityLookup = letter("G", "E", "E", "E", "F", "F", "F", "F"); // https://nms.screamingsandals.org/1.20.4/net/minecraft/server/level/ServerLevel.html
+    public static String getEntityFromId = letter("a", "a", "a", "a", "a", "a", "a", "a"); // https://nms.screamingsandals.org/1.20.4/net/minecraft/world/level/entity/LevelEntityGetter.html
+
+
     private static String letter(String v7, String v6, String v5, String v4, String v3, String v2, String v1, String v0) {
         return switch (getBukkitVersion()) {
             case "1203", "1204" -> v7;
@@ -130,6 +135,7 @@ public class Letters {
     public static String Horse = entityTypeLetter("Z","Y", "Q", "O");
     public static String Husk = entityTypeLetter("aa","Z", "R", "P");
     public static String Illusioner = entityTypeLetter("ab","aa", "S", "Q");
+    public static String Interaction = entityTypeLetter("ac", "ab", null, null);
     public static String IronGolem = entityTypeLetter("ad","ac", "T", "S");
     public static String DroppedItem = entityTypeLetter("ae","ad", "U", "T");
     public static String ItemDisplay = entityTypeLetter("af", "ae", "ae", "null");

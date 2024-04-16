@@ -22,10 +22,11 @@ public class EffSpawnFakePlayer extends Effect {
 
     static {
         Skript.registerEffect(EffSpawnFakePlayer.class,
-                "spawn fake player named %string% [on tablist %-boolean%] [with latency %-number%] at %location% for %players%");
+                "spawn fake player named %string% [with skin named %string%] [on tablist %-boolean%] [with latency %-number%] at %location% for %players%");
     }
 
     private Expression<String> name;
+    private Expression<String> skinName;
     private Expression<Boolean> listed;
     private Expression<Number> latency;
     private Expression<Location> location;
@@ -35,10 +36,11 @@ public class EffSpawnFakePlayer extends Effect {
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         name = (Expression<String>) exprs[0];
-        listed = (Expression<Boolean>) exprs[1];
-        latency = (Expression<Number>) exprs[2];
-        location = (Expression<Location>) exprs[3];
-        players = (Expression<Player>) exprs[4];
+        skinName = (Expression<String>) exprs[1];
+        listed = (Expression<Boolean>) exprs[2];
+        latency = (Expression<Number>) exprs[3];
+        location = (Expression<Location>) exprs[4];
+        players = (Expression<Player>) exprs[5];
         return true;
     }
 
@@ -47,16 +49,17 @@ public class EffSpawnFakePlayer extends Effect {
     protected void execute(Event event) {
         String name = this.name.getSingle(event);
         boolean listed = false;
-        if(this.listed != null)
+
+        if (this.listed != null)
             listed = this.listed.getSingle(event).booleanValue();
 
         int latency = 0;
-        if(this.latency != null)
+        if (this.latency != null)
             latency = this.latency.getSingle(event).intValue();
 
         Location location = this.location.getSingle(event);
 
-        FakePlayer.fakePlayer(Arrays.stream(players.getArray(event)).toList(), name, location, listed, latency);
+        FakePlayer.fakePlayer(Arrays.stream(players.getArray(event)).toList(), name, skinName.getSingle(event), location, listed, latency);
     }
 
     @SuppressWarnings("DataFlowIssue")

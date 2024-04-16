@@ -6,15 +6,17 @@ import org.apache.commons.lang.reflect.FieldUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import poa.poask.util.reflection.common.CommonClassMethodFields;
 import poa.poask.util.reflection.common.Letters;
 import poa.poask.util.reflection.common.Reflection;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GlowPacket {
-
 
 
 
@@ -38,7 +40,7 @@ public class GlowPacket {
         if (glow)
             CommonClassMethodFields.itemWatcherClass.getDeclaredMethod(Letters.dataWatcher$ItemAccessor, Object.class).invoke(item, (byte) (initialMask | 1 << bitIndex));
         else
-            CommonClassMethodFields.itemWatcherClass.getDeclaredMethod(Letters.dataWatcher$ItemAccessor, Object.class).invoke(item, (byte) (initialMask & ~(1 << bitIndex)));
+            CommonClassMethodFields.itemWatcherClass.getDeclaredMethod(Letters.dataWatcher$ItemAccessor, Object.class).invoke(item, (byte) (initialMask & ~ (1 << bitIndex)));
 
         FieldUtils.writeDeclaredField(newWatcher, Letters.dataWatcherInt2ObjectMap, newMap, true);
 

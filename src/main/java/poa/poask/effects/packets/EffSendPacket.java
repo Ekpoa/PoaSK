@@ -42,6 +42,7 @@ public class EffSendPacket extends Effect implements Listener {
             Object built = metadata.build();
             for (Player player : this.players.getArray(event))
                 SendPacket.sendPacket(player, built);
+
         }
     }
 

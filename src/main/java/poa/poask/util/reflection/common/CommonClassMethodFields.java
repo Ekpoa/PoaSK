@@ -4,15 +4,20 @@ import ch.njol.skript.Skript;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import javax.print.attribute.standard.JobKOctets;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -116,8 +121,18 @@ public class CommonClassMethodFields {
     public static Class<?> CLIENTBOUND_CUSTOM_PAYLOAD_PACKET;
     public static Constructor<?> CLIENTBOUND_CUSTOM_PAYLOAD_PACKET_CONSTRUCT;
 
-    //Other Stuff
+    //GET ENTITY FROM ID
+    public static final Class<?> serverLevelClass = Reflection.getNMSClass("WorldServer", "net.minecraft.server.level");
+    public static final Method getServerLevelMethod;
 
+    public static Method getEntityFromIdMethod; //https://nms.screamingsandals.org/1.19/net/minecraft/server/level/ServerLevel.html (only 1 letter 1.19-1.20.4)
+
+    public static Class<?> levelEntityGetterClass = Reflection.getNMSClass("LevelEntityGetter", "net.minecraft.world.level.entity");
+    public static Method getEntityFromIdFromEntityGetter; //this doesn't do async check
+    public static Method getBukkitEntity;
+
+    public static Class<?> craftWorldClass = Reflection.getOBCClass("CraftWorld");
+    public static Method worldGetHandle;
 
 
     static {
@@ -189,6 +204,15 @@ public class CommonClassMethodFields {
                 CLIENTBOUND_CUSTOM_PAYLOAD_PACKET = Reflection.getNMSClass("ClientboundCustomPayloadPacket", "net.minecraft.network.protocol.common");
                 CLIENTBOUND_CUSTOM_PAYLOAD_PACKET_CONSTRUCT = CLIENTBOUND_CUSTOM_PAYLOAD_PACKET.getConstructor(CUSTOM_PAYLOAD_CLASS);
             }
+
+            getEntityFromIdMethod = serverLevelClass.getDeclaredMethod("a", int.class);
+            getServerLevelMethod = serverPlayerClass.getMethod(Letters.getServerLevel);
+
+            getEntityFromIdFromEntityGetter = levelEntityGetterClass.getDeclaredMethod(Letters.getEntityFromId, int.class);
+
+            getBukkitEntity = nmsEntityClass.getDeclaredMethod("getBukkitEntity");
+
+            worldGetHandle = craftWorldClass.getDeclaredMethod("getHandle");
         } catch (NoSuchMethodException | ClassNotFoundException | NoSuchFieldException | IllegalAccessException |
                  InvocationTargetException e) {
             throw new RuntimeException(e);
@@ -229,6 +253,31 @@ public class CommonClassMethodFields {
     public static int getBlockId(BlockData blockData){
         Object state = getState.invoke(blockData);
         return (int) getIdMethod.invoke(blockClass, state);
+    }
+
+    @SneakyThrows
+    public static Object getServerLevel(Player player){
+        return getServerLevelMethod.invoke(Reflection.getNMSHandle(player));
+    }
+    @SneakyThrows
+    public static Object getServerLevel(World world){
+        if (world == null)
+            return null;
+        return world.getClass().getDeclaredMethod("getHandle").invoke(world);
+    }
+
+    @SneakyThrows
+    public static Entity getEntityFromId(int id, Object level, boolean allowAsync){
+        if (level == null)
+            return null;
+        if(allowAsync) {
+            Object entityGetter = level.getClass().getDeclaredMethod("getEntityLookup").invoke(level);
+            Object entityEntity = getEntityFromIdFromEntityGetter.invoke(entityGetter, id);
+            if(entityEntity == null)
+                return null;
+            return (Entity) getBukkitEntity.invoke(entityEntity);
+        }
+        return (Entity) level.getClass().getDeclaredMethod("a", int.class).invoke(level, id);
     }
 
 }

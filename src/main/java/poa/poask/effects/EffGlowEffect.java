@@ -18,7 +18,12 @@ import poa.poask.util.reflection.GlowPacket;
 import poa.poask.util.reflection.TeamPacket;
 import poa.poask.util.reflection.common.SendPacket;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class EffGlowEffect extends Effect implements Listener {
 
@@ -27,6 +32,7 @@ public class EffGlowEffect extends Effect implements Listener {
                 "make %entities% glow %color% for %players%",
                 "make %entities% not glow for %players%");
     }
+
 
     private int pattern;
     private Expression<Entity> entities;
@@ -47,17 +53,16 @@ public class EffGlowEffect extends Effect implements Listener {
         return true;
     }
 
+
+    public static Map<Player, List<Integer>> glowMap = new HashMap<>();//player -> target    removal handled in login
+
     @SuppressWarnings("NullableProblems")
     @SneakyThrows
     @Override
-
     protected void execute(Event event) {
-        Color color = this.color.getSingle(event);
         String chatColor = "white";
-        if (color != null)
-            chatColor = ((SkriptColor) color).asChatColor().name();
-
-
+        if (this.color != null)
+            chatColor = ((SkriptColor) color.getSingle(event)).asChatColor().name();
 
         for (Entity entity : this.entities.getArray(event)) {
             String uuid = entity.getUniqueId().toString();
@@ -65,6 +70,27 @@ public class EffGlowEffect extends Effect implements Listener {
                 uuid = player.getName();
 
             for (Player player : players.getArray(event)) {
+                if (entity instanceof Player target) {
+                    if (this.color == null) {
+                        List<Integer> list = glowMap.get(player);
+                        if (list == null)
+                            list = new ArrayList<>();
+
+                        if (!list.isEmpty())
+                            list.remove((Integer) target.getEntityId());
+                        glowMap.put(player, list);
+
+                    } else {
+                        List<Integer> list = glowMap.get(player);
+                        if (list == null)
+                            list = new ArrayList<>();
+
+                        list.add(target.getEntityId());
+                        glowMap.put(player, list);
+                    }
+
+
+                }
                 SendPacket.sendPacket(player, GlowPacket.glowPacket(entity, pattern == 0));
                 SendPacket.sendPacket(player, TeamPacket.teamPacketForGlow(uuid, chatColor, List.of(uuid)));
             }

@@ -5,6 +5,7 @@ import ch.njol.skript.lang.util.SimpleEvent;
 import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Getter;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
+import io.papermc.paper.event.player.PlayerUntrackEntityEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
@@ -61,6 +62,17 @@ public class Events extends SimpleEvent {
         EventValues.registerEventValue(PlayerTrackEntityEvent.class, Entity.class, new Getter<>() {
             @Override
             public Entity get(PlayerTrackEntityEvent event) {
+                return event.getEntity();
+            }
+        }, EventValues.TIME_NOW);
+
+        //Unload
+        Skript.registerEvent("Player unLoad Entity", SimpleEvent.class, PlayerUntrackEntityEvent.class,
+                "player unload entity");
+
+        EventValues.registerEventValue(PlayerUntrackEntityEvent.class, Entity.class, new Getter<>() {
+            @Override
+            public Entity get(PlayerUntrackEntityEvent event) {
                 return event.getEntity();
             }
         }, EventValues.TIME_NOW);

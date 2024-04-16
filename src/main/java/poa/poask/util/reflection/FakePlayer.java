@@ -56,7 +56,6 @@ public class FakePlayer {
     private static final Method setPosMethod;
 
 
-
     private static final Class<?> infoUpdatePacketEntryClass = Reflection.getNMSClass("ClientboundPlayerInfoUpdatePacket$b", "net.minecraft.network.protocol.game");
     private static final Constructor<?> infoUpdatePacketEntryConstructor;
     private static final Class<?> gameTypeClass = Reflection.getNMSClass("EnumGamemode", "net.minecraft.world.level");
@@ -128,52 +127,67 @@ public class FakePlayer {
     public static ConcurrentMap<Player, Map<UUID, Integer>> playerMapMap = new ConcurrentHashMap<>(); //handled in Login class
 
 
-    @SneakyThrows
-    public static void fakePlayer(List<Player> sendTo, String name, Location location, boolean listed, int latency){
-        OfflinePlayer op = Bukkit.getOfflinePlayer(name);
 
-        UUID uuid = op.getUniqueId();
-        Object gameProfile = gameProfileConstructor.newInstance(uuid, name);
-
-        Object fakePlayer = serverPlayerConstructor.newInstance(server, level, gameProfile, clientInformationDefault);
-
-        setPosMethod.invoke(fakePlayer, location.getX(), location.getY(), location.getZ());
-
-        Object fakePlayerGameProfile = getGameProfileMethod.invoke(fakePlayer);
-
-        ForwardingMultimap<String, Object> properties = (ForwardingMultimap<String, Object>) getGameProfileProperties.invoke(fakePlayerGameProfile);
-        properties.removeAll("textures");
-        Object textures = gamePropertiesConstructor.newInstance("textures", fetchSkinURL(uuid), fetchSkinSignature(uuid));
-        properties.put("textures", textures);
+    public static void fakePlayer(List<Player> sendTo, String name, String skinName, Location location, boolean listed, int latency) {
+        try {
+            OfflinePlayer op = Bukkit.getOfflinePlayer(name);
 
 
-        Object entry = infoUpdatePacketEntryConstructor.newInstance(uuid, fakePlayerGameProfile, listed, latency, defaultGameType, emptyComponent, null);
+            UUID uuid = UUID.randomUUID();
+            Object gameProfile = gameProfileConstructor.newInstance(uuid, name);
 
-        Object addPlayerPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) addPlayer), entry);
+            Object fakePlayer = serverPlayerConstructor.newInstance(server, level, gameProfile, clientInformationDefault);
 
-        Object updateListedPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) updateListed), entry);
-        Object updateLatencyPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) updateLatency), entry);
+            setPosMethod.invoke(fakePlayer, location.getX(), location.getY(), location.getZ());
 
-        Object spawnEntityPacket = addEntityPacketConstructor.newInstance(fakePlayer);
+            Object fakePlayerGameProfile = getGameProfileMethod.invoke(fakePlayer);
 
-        Method getBukkitEntity = fakePlayer.getClass().getDeclaredMethod("getBukkitEntity");
 
-        Entity bukkitEntity = (Entity) getBukkitEntity.invoke(fakePlayer);
-        int id = bukkitEntity.getEntityId();
+            if (skinName != null && !skinName.isEmpty()) {
+                UUID skinUUID = Bukkit.getOfflinePlayer(skinName).getUniqueId();
+                String s = fetchSkinURL(skinUUID);
+                if (s != null && !s.isEmpty()) {
+                    ForwardingMultimap<String, Object> properties = (ForwardingMultimap<String, Object>) getGameProfileProperties.invoke(fakePlayerGameProfile);
+                    properties.removeAll("textures");
 
-        for (Player player : sendTo) {
-            SendPacket.sendPacket(player, addPlayerPacket);
-            Map<UUID, Integer> innerMap = new HashMap<>();
-            innerMap.put(uuid, id);
+                    Object textures = gamePropertiesConstructor.newInstance("textures", s, fetchSkinSignature(skinUUID));
+                    properties.put("textures", textures);
+                }
+            }
 
-            playerMapMap.put(player, innerMap);
 
-            if(listed)
-                SendPacket.sendPacket(player, updateListedPacket);
-            if(latency > 0)
-                SendPacket.sendPacket(player, updateLatencyPacket);
 
-            Bukkit.getScheduler().runTaskLater(PoaSK.getInstance(), () ->  SendPacket.sendPacket(player, spawnEntityPacket), 1L);
+            Object entry = infoUpdatePacketEntryConstructor.newInstance(uuid, fakePlayerGameProfile, listed, latency, defaultGameType, emptyComponent, null);
+
+            Object addPlayerPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) addPlayer), entry);
+
+            Object updateListedPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) updateListed), entry);
+            Object updateLatencyPacket = infoUpdatePacketConstructor.newInstance(EnumSet.of((Enum) updateLatency), entry);
+
+            Object spawnEntityPacket = addEntityPacketConstructor.newInstance(fakePlayer);
+
+            Method getBukkitEntity = fakePlayer.getClass().getDeclaredMethod("getBukkitEntity");
+
+            Entity bukkitEntity = (Entity) getBukkitEntity.invoke(fakePlayer);
+            int id = bukkitEntity.getEntityId();
+
+            for (Player player : sendTo) {
+                SendPacket.sendPacket(player, addPlayerPacket);
+                Map<UUID, Integer> innerMap = new HashMap<>();
+                innerMap.put(uuid, id);
+
+                playerMapMap.put(player, innerMap);
+
+                if (listed)
+                    SendPacket.sendPacket(player, updateListedPacket);
+                if (latency > 0)
+                    SendPacket.sendPacket(player, updateLatencyPacket);
+
+                Bukkit.getScheduler().runTaskLater(PoaSK.getInstance(), () -> SendPacket.sendPacket(player, spawnEntityPacket), 1L);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -191,10 +205,10 @@ public class FakePlayer {
 
 
     @SneakyThrows
-    public static void removeFakePlayerPacket(List<Player> sendTo, List<UUID> uuids){
+    public static void removeFakePlayerPacket(List<Player> sendTo, List<UUID> uuids) {
         Object removeDataPacket = removePlayerPacketConstructor.newInstance(uuids);
 
-        for(Player p : sendTo) {
+        for (Player p : sendTo) {
             List<Integer> ids = new ArrayList<>();
             Map<UUID, Integer> playerMap = playerMapMap.get(p);
             for (UUID uuid : uuids) {
@@ -218,7 +232,7 @@ public class FakePlayer {
 
     @SneakyThrows
     public static String fetchSkinURL(UUID uuid) {
-        if(!skinMap.containsKey(uuid)) {
+        if (!skinMap.containsKey(uuid)) {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false"))

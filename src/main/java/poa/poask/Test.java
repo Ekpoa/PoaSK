@@ -1,6 +1,7 @@
 package poa.poask;
 
 import lombok.SneakyThrows;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,7 +18,7 @@ public class Test implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(sender instanceof Player player){
-            FakePlayer.fakePlayer(List.of(player), args[0], player.getLocation(), true, Integer.parseInt(args[1]));
+
         }
         return false;
     }

@@ -6,12 +6,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import poa.poask.effects.EffGlowEffect;
 import poa.poask.util.reflection.FakePlayer;
 import poa.poask.util.reflection.common.Letters;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Login implements Listener {
 
@@ -32,6 +31,12 @@ public class Login implements Listener {
     public void onQuit(PlayerQuitEvent e) {
         Player player = e.getPlayer();
         FakePlayer.playerMapMap.remove(player);
+
+        EffGlowEffect.glowMap.remove(player);
+
+
+        EffGlowEffect.glowMap.entrySet().removeIf(entry -> entry.getValue().contains(player.getEntityId()));
+
 
         if (playerPacketStuffMap.containsKey(player)) {
             playerPacketStuffMap.get(player).uninjectPlayer();

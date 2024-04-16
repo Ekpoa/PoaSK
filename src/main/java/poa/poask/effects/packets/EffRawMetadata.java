@@ -147,6 +147,12 @@ public class EffRawMetadata extends Effect {
                         case "text" -> metadata.setText(String.join(" ", Arrays.copyOfRange(args, 2, args.length)));
                     }
                 }
+                case "interaction" -> {
+                    switch (args[1].toLowerCase()) {
+                        case "width" -> metadata.setInteractionWidth(Float.parseFloat(args[2]));
+                        case "height" -> metadata.setInteractionHeight(Float.parseFloat(args[2]));
+                    }
+                }
             }
         }
     }
